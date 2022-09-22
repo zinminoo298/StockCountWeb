@@ -67,10 +67,16 @@ var db;
 	//         + ';');
 // });
 
+app.enable('trust proxy',true);
 app.use(session({
 	secret: 'secret',
 	resave: true,
 	saveUninitialized: true
+	// proxy: true,
+//    secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
+//    saveUninitialized:true,
+//    cookie: { maxAge: 'twoDay',secure:false },
+//    resave: false 
 }));
 
 app.use(express.json());
