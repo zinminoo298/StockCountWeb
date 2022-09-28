@@ -1,3 +1,4 @@
+
 (function ($) {
     "use strict";
     $(document).on('click', function (e) {
@@ -367,8 +368,7 @@ $("#flip-back").click(function(){
            password : $("#password_login").val()
          },
         success: function(data){
-            console.log(data);
-            if(data == 'Login Successful'){
+            if(data == "OK"){
                 window.location.href="/mainmenu"
             }
             if(data == 'admin'){
@@ -376,8 +376,11 @@ $("#flip-back").click(function(){
             }
         },
         error:function (data) {
-            console.log(data);
-            alert('Access Failure')
+            if(data.statusCode == 401)
+            alert('Please Check Email and Password')
+            Swal.fire('Login Failed!', 'Please check email and password', 'info')
+            $("#username_login").value = "1233131";
+            $("#password_login").value = '';
         }
     });
 });
@@ -789,36 +792,6 @@ $('#btn_generate').click(function(e){
           }
     })  
 });  
-    
-     
-        // $('#yourUl').append(items.join(''));
-        
-        // data = [
-        //     {
-        //       "userId": 1,
-        //       "Username": "User_1"
-        //     },
-        //     {
-        //       "userId": 2,
-        //       "Username": "User_2"
-        //     }
-        //     ];
-            
-        //     var items = [];
-            
-        //     $.each(data, function(i, item) {
-        //         console.log("GG")
-            
-        //     //   items.push('<li><a href="yourlink?id=' + item.UserID + '">' + item.Username + '</a></li>');
-            //   items.push('<li class="file-box">'+
-            //                       '<div class="file-top">  <i class="fa fa-file-text-o txt-primary"></i><i class="fa fa-ellipsis-v f-14 ellips"></i></div>'+
-            //                       '<div class="file-bottom">' +
-            //                         '<h6>Logo.psd </h6>' +
-            //                         '<p class="mb-1">2.0 MB</p>' +
-            //                       '</div>' +
-            //                     '</li>')
-            
-        //     }); // close each()
             
    
 

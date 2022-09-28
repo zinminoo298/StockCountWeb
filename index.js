@@ -15,10 +15,6 @@ const download = require('download');
 const moment = require("moment");
 const { request } = require('https');
 const port = 3000;
-var invalidfilearray = []
-var eachfilearray = []
-var filesarray = []
-var generatedfileindex = 0
 var pool;
 var uploadfilename;
 var currentusername;
@@ -31,52 +27,47 @@ var db;
 // 		+ 'password varchar(255) NOT NULL'
 // 		+ ');');
 
-	// db.run('CREATE TABLE IF NOT EXISTS tbl_masters ('
-	//         + 'id INTEGER PRIMARY KEY AUTOINCREMENT,' 
-	// 		+ 'barcode varchar(255),'
-	// 		+ 'itemcode varchar(255),'
-	// 		+ 'description varchar(255),'
-	// 		+ 'onhand_qty varchar(255),'
-	// 		+ 'user_id int,'
-	// 		+ 'created_at DATE DEFAULT (datetime(now,localtime")),'
-	// 		+ 'updated_at DATE DEFAULT (datetime("now","localtime")))'
-	//         + ');');
+// db.run('CREATE TABLE IF NOT EXISTS tbl_masters ('
+//         + 'id INTEGER PRIMARY KEY AUTOINCREMENT,' 
+// 		+ 'barcode varchar(255),'
+// 		+ 'itemcode varchar(255),'
+// 		+ 'description varchar(255),'
+// 		+ 'onhand_qty varchar(255),'
+// 		+ 'user_id int,'
+// 		+ 'created_at DATE DEFAULT (datetime(now,localtime")),'
+// 		+ 'updated_at DATE DEFAULT (datetime("now","localtime")))'
+//         + ');');
 
-	// db.run('CREATE TABLE IF NOT EXISTS tbl_transactions ('
-	//         + 'id INTEGER PRIMARY KEY AUTOINCREMENT,' 
-	// 		+ 'scan_date varchar(255),'
-	// 		+ 'location varchar(255),'
-	// 		+ 'barcode varchar(255),'
-	// 		+ 'itemcode varchar(255),'
-	// 		+ 'scan_qty int,'
-	// 		+ 'inspector varchar(255),'
-	// 		+ 'user_id int,'
-	// 		+ 'created_at DATE DEFAULT (datetime("now","localtime")),'
-	// 		+ 'updated_at DATE DEFAULT (datetime("now","localtime")))'
-	//         + ');');
+// db.run('CREATE TABLE IF NOT EXISTS tbl_transactions ('
+//         + 'id INTEGER PRIMARY KEY AUTOINCREMENT,' 
+// 		+ 'scan_date varchar(255),'
+// 		+ 'location varchar(255),'
+// 		+ 'barcode varchar(255),'
+// 		+ 'itemcode varchar(255),'
+// 		+ 'scan_qty int,'
+// 		+ 'inspector varchar(255),'
+// 		+ 'user_id int,'
+// 		+ 'created_at DATE DEFAULT (datetime("now","localtime")),'
+// 		+ 'updated_at DATE DEFAULT (datetime("now","localtime")))'
+//         + ');');
 
-	// db.run('Create TRIGGER trigger_tbl_transactions AFTER UPDATE ON tbl_transactions '
-	// 		+'BEGIN'
-	// 		+'UPDATE tbl_transactions SET updated_at = strftime( DateTime ("now", "localtime"))'
-	// 		+'WHERE id=new.id;'
-	// 		+'END;')
+// db.run('Create TRIGGER trigger_tbl_transactions AFTER UPDATE ON tbl_transactions '
+// 		+'BEGIN'
+// 		+'UPDATE tbl_transactions SET updated_at = strftime( DateTime ("now", "localtime"))'
+// 		+'WHERE id=new.id;'
+// 		+'END;')
 
-	// db.run('INSERT INTO tbl_userlogin'
-	//         + '(password,username) VALUES'
-	//         + '("123456","user2")'
-	//         + ';');
+// db.run('INSERT INTO tbl_userlogin'
+//         + '(password,username) VALUES'
+//         + '("123456","user2")'
+//         + ';');
 // });
 
-app.enable('trust proxy',true);
+app.enable('trust proxy', true);
 app.use(session({
 	secret: 'secret',
 	resave: true,
 	saveUninitialized: true
-	// proxy: true,
-//    secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
-//    saveUninitialized:true,
-//    cookie: { maxAge: 'twoDay',secure:false },
-//    resave: false 
 }));
 
 app.use(express.json());
@@ -105,7 +96,6 @@ app.get('/login', function (request, response) {
 	if (username == "admin" && password == "123456") {
 		request.session.loggedin = true;
 		request.session.username = username;
-		// currentusername = username;
 		response.send('admin')
 		response.end();
 	}
@@ -117,33 +107,26 @@ app.get('/login', function (request, response) {
 				if (results.length > 0) {
 					request.session.loggedin = true;
 					request.session.username = username;
-					// currentusername = username;
 					console.log("current user : " + request.session.username)
-					// const dir = path.resolve(path.join(__dirname, '/uploads/', currentusername));
-					// if (!fs.existsSync(dir)) {
-					// 	fs.mkdirSync(dir);
-					// 	fs.mkdirSync(dir + '/transaction');
-					// 	fs.mkdirSync(dir + '/master');
-					// }
 					db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
-					response.send('Login Successful')
+					response.sendStatus(200)
 				}
 				else {
-					response.send('Incorrect Username and/or Password!')
+					response.sendStatus(401)
 				}
 				response.end();
 			});
 		}
 		else {
-			response.send('Please enter Username and Password!');
+			response.sendStatus(401);
 			response.end();
 		}
 	}
 });
 
-app.get('/logout',function(request,response){
-		request.session.destroy();
-		response.sendFile(__dirname + '/HTML/login.html');
+app.get('/logout', function (request, response) {
+	request.session.destroy();
+	response.sendFile(__dirname + '/HTML/login.html');
 })
 
 app.get('/mainmenu', function (request, response) {
@@ -263,37 +246,37 @@ app.post('/create_user', function (request, response) {
 						fs.copyFile('master.db', `uploads/${username}/master.db`, (err) => {
 							if (err) throw err;
 							console.log('master.db was copied');
-						  });
+						});
 						response.sendStatus(200);
 					}
 				});
 			}
-			else{
+			else {
 				response.sendStatus(422);
 			}
 		}
 	})
 })
 
-app.post('/delete_user',function(request,response){
+app.post('/delete_user', function (request, response) {
 	const id = request.body.id
 	const username = request.body.username
 	console.log(id)
 	const query = `DELETE FROM tbl_userlogin WHERE id = '${id}'`
-	db1.all(query,function(err,results){
-		if(err){
+	db1.all(query, function (err, results) {
+		if (err) {
 			console.log(err)
 			response.sendStatus(500);
 		}
-		else{
+		else {
 
 			var dir = `uploads/${username}/`
 			db1.run("DELETE FROM sqlite_sequence WHERE name='tbl_userlogin'")
 			db1.run("VACUUM");
 			// fsExtra.emptyDir(dir)
 			if (fs.existsSync(dir)) {
-				fs.rmSync(dir, {recursive: true})
-			  }
+				fs.rmSync(dir, { recursive: true })
+			}
 			response.sendStatus(200);
 		}
 	})
@@ -585,9 +568,44 @@ app.get('/summeryreport', function (request, response) {
 const run = asyn => {
 
 }
+// app.post('/generate_report', function (request, response) {
+// 	var directoryPath = __dirname + '/uploads/' + request.session.username + '/transaction/'
+// 	//passsing directoryPath and callback function
+// 	fs.readdir(directoryPath, function (err, files) {
+// 		//handling error
+// 		if (err) {
+// 			return console.log('Unable to scan directory: ' + err);
+// 		}
+// 		//listing all files using forEach
+// 		var total_files = files.length
+// 		console.log(files)
+// 		try {
+// 			if (total_files != 0) {
+// 				var i = 0
+// 				db.run('DELETE FROM tbl_transactions');
+// 				db.run('DELETE FROM sqlite_sequence WHERE name="tbl_transactions"');
+// 				db.run('VACUUM');
+// 				generatedfileindex = 0
+// 				var invalidfilearray = []
+// 				files.forEach(function (file) {
+// 					i++
+// 					var stats = fs.statSync(directoryPath + '/' + file)
+// 					// console.log(stats.size / (1024 ** 2) + 'MB');
+// 					uploadCsvSummaryReport(directoryPath + file, total_files, invalidfilearray, request, response);
+// 				});
+// 			}
+// 			else {
+// 				response.sendStatus(404);
+// 			}
+// 		} catch (e) {
+// 			console.log(e)
+// 		}
+
+// 	});
+// });
+
 app.post('/generate_report', function (request, response) {
 	var directoryPath = __dirname + '/uploads/' + request.session.username + '/transaction/'
-	// const directoryPath = path.join(__dirname, 'uploads');
 	//passsing directoryPath and callback function
 	fs.readdir(directoryPath, function (err, files) {
 		//handling error
@@ -597,20 +615,20 @@ app.post('/generate_report', function (request, response) {
 		//listing all files using forEach
 		var total_files = files.length
 		console.log(files)
+		var file_array = []
 		try {
 			if (total_files != 0) {
-				var i = 0
 				db.run('DELETE FROM tbl_transactions');
 				db.run('DELETE FROM sqlite_sequence WHERE name="tbl_transactions"');
 				db.run('VACUUM');
-				generatedfileindex = 0
-				invalidfilearray = []
-				files.forEach(function (file) {
-					i++
-					var stats = fs.statSync(directoryPath + '/' + file)
-					// console.log(stats.size / (1024 ** 2) + 'MB');
-					uploadCsvSummaryReport(directoryPath + file, total_files, i, request, response);
-				});
+				// generatedfileindex = 0
+				// var invalidfilearray = []
+				// files.forEach(function (file) {
+				// 	// var stats = fs.statSync(directoryPath + '/' + file)
+				// 	// console.log(stats.size / (1024 ** 2) + 'MB');
+				// 	file_array.push(file)
+				// });
+				uploadCsvSummaryReport(directoryPath, files, total_files, request, response);
 			}
 			else {
 				response.sendStatus(404);
@@ -622,51 +640,103 @@ app.post('/generate_report', function (request, response) {
 	});
 });
 
-function uploadCsvSummaryReport(uriFile, total_files, fileindex, request, response) {
-
-	let stream = fs.createReadStream(uriFile);
-	let csvDataColl = [];
-	let fileStream = csv
-		.parse()
-		.on("data", function (data) {
-			csvDataColl.push(data);
-		})
-		.on("end", function () {
-			if (csvDataColl[0][0] == "location" && csvDataColl[0][1] == "barcode" && csvDataColl[0][2] == "itemcode" && csvDataColl[0][3] == "scan_qty" && csvDataColl[0][4] == "scan_date" && csvDataColl[0][5] == "inspector" && csvDataColl[0][6] == "user_id") {
-				csvDataColl.shift();
-				let query = "INSERT INTO tbl_transactions (location, barcode, itemcode, scan_qty, scan_date, inspector, user_id) VALUES ('" + csvDataColl[0][0] + "','" + csvDataColl[0][1] +
-					"','" + csvDataColl[0][2] + "','" + csvDataColl[0][3] + "','" + csvDataColl[0][4] + "','" + csvDataColl[0][5] + "','" + csvDataColl[0][6] + "')";
-				for (var i = 1; i < csvDataColl.length; i++) {
-					console.log(i)
-					query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "','" + csvDataColl[i][4] + "','" + csvDataColl[i][5] + "','" + csvDataColl[i][6] + "')";
-				}
-				db.all(query, function (err, results) {
-					if (err) {
-						console.log(err);
-						response.send('Error Import');
+function uploadCsvSummaryReport(directoryPath, file_array, total_files, request, response) {
+	var invalidfilearray = []
+	var generatedfileindex = 0
+	console.log(file_array.length)
+	for (i in file_array) {
+		let uriFile = directoryPath+file_array[i]
+		console.log(uriFile)
+		let stream = fs.createReadStream(uriFile);
+		let csvDataColl = [];
+		let fileStream = csv
+			.parse()
+			.on("data", function (data) {
+				csvDataColl.push(data);
+			})
+			.on("end", function () {
+				if (csvDataColl[0][0] == "location" && csvDataColl[0][1] == "barcode" && csvDataColl[0][2] == "itemcode" && csvDataColl[0][3] == "scan_qty" && csvDataColl[0][4] == "scan_date" && csvDataColl[0][5] == "inspector" && csvDataColl[0][6] == "user_id") {
+					csvDataColl.shift();
+					let query = "INSERT INTO tbl_transactions (location, barcode, itemcode, scan_qty, scan_date, inspector, user_id) VALUES ('" + csvDataColl[0][0] + "','" + csvDataColl[0][1] +
+						"','" + csvDataColl[0][2] + "','" + csvDataColl[0][3] + "','" + csvDataColl[0][4] + "','" + csvDataColl[0][5] + "','" + csvDataColl[0][6] + "')";
+					for (var i = 1; i < csvDataColl.length; i++) {
+						// console.log(i)
+						query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "','" + csvDataColl[i][4] + "','" + csvDataColl[i][5] + "','" + csvDataColl[i][6] + "')";
 					}
-					else {
-						fs.unlinkSync(uriFile)
-						generatedfileindex++
-						console.log(total_files + "/" + generatedfileindex)
-						if (total_files == generatedfileindex) {
-							response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+					db.all(query, function (err, results) {
+						if (err) {
+							console.log(err);
+							response.send('Error Import');
 						}
-					}
-				});
-			}
-			else {
-				console.log(uriFile)
-				invalidfilearray.push(uriFile)
-				generatedfileindex++
-				console.log(total_files + "/" + generatedfileindex)
-				if (total_files == generatedfileindex) {
-					response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+						else {
+							fs.unlinkSync(uriFile)
+							generatedfileindex++
+							console.log(total_files + "/" + generatedfileindex)
+							if (total_files == generatedfileindex) {
+								response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+							}
+						}
+					});
 				}
-			}
-		});
-	stream.pipe(fileStream);
+				else {
+					console.log(uriFile)
+					invalidfilearray.push(uriFile)
+					generatedfileindex++
+					console.log(total_files + "/" + generatedfileindex)
+					if (total_files == generatedfileindex) {
+						response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+					}
+				}
+			});
+		stream.pipe(fileStream);
+	}
 }
+
+// function uploadCsvSummaryReport(uriFile, total_files, invalidfilearray,request, response) {
+
+// 	let stream = fs.createReadStream(uriFile);
+// 	let csvDataColl = [];
+// 	let fileStream = csv
+// 		.parse()
+// 		.on("data", function (data) {
+// 			csvDataColl.push(data);
+// 		})
+// 		.on("end", function () {
+// 			if (csvDataColl[0][0] == "location" && csvDataColl[0][1] == "barcode" && csvDataColl[0][2] == "itemcode" && csvDataColl[0][3] == "scan_qty" && csvDataColl[0][4] == "scan_date" && csvDataColl[0][5] == "inspector" && csvDataColl[0][6] == "user_id") {
+// 				csvDataColl.shift();
+// 				let query = "INSERT INTO tbl_transactions (location, barcode, itemcode, scan_qty, scan_date, inspector, user_id) VALUES ('" + csvDataColl[0][0] + "','" + csvDataColl[0][1] +
+// 					"','" + csvDataColl[0][2] + "','" + csvDataColl[0][3] + "','" + csvDataColl[0][4] + "','" + csvDataColl[0][5] + "','" + csvDataColl[0][6] + "')";
+// 				for (var i = 1; i < csvDataColl.length; i++) {
+// 					console.log(i)
+// 					query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "','" + csvDataColl[i][4] + "','" + csvDataColl[i][5] + "','" + csvDataColl[i][6] + "')";
+// 				}
+// 				db.all(query, function (err, results) {
+// 					if (err) {
+// 						console.log(err);
+// 						response.send('Error Import');
+// 					}
+// 					else {
+// 						fs.unlinkSync(uriFile)
+// 						generatedfileindex++
+// 						console.log(total_files + "/" + generatedfileindex)
+// 						if (total_files == generatedfileindex) {
+// 							response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+// 						}
+// 					}
+// 				});
+// 			}
+// 			else {
+// 				console.log(uriFile)
+// 				invalidfilearray.push(uriFile)
+// 				generatedfileindex++
+// 				console.log(total_files + "/" + generatedfileindex)
+// 				if (total_files == generatedfileindex) {
+// 					response.send(`${invalidfilearray.length}` + "/" + `${total_files}`)
+// 				}
+// 			}
+// 		});
+// 	stream.pipe(fileStream);
+// }
 
 app.get('/load_generate_report_serverside', function (request, response) {
 	var draw = request.query.draw;
@@ -762,6 +832,8 @@ app.get('/get_files', function (request, response) {
 	// const directoryPath = path.join(__dirname, 'uploads');
 	//passsing directoryPath and callback function
 	fs.readdir(directoryPath, function (err, files) {
+		var filesarray = []
+		var eachfilearray = []
 		filesarray.length = 0
 		//handling error
 		if (err) {
