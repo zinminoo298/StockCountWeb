@@ -89,6 +89,10 @@ app.post("/request", function (req, res) {
 	res.end();
 });
 
+app.get('/newcount', function(request,response){
+	response.sendFile(__dirname + '/HTML/setup.html');
+})
+
 app.get('/login', function (request, response) {
 	let username = request.query.username;
 	let password = request.query.password;
@@ -329,40 +333,46 @@ function uploadCsv(dir, uriFile, request, response) {
 			csvDataColl.push(data);
 		})
 		.on("end", function () {
-			if (csvDataColl[0][0] == "barcode" && csvDataColl[0][1] == "itemcode" && csvDataColl[0][2] == "description" && csvDataColl[0][3] == "onhand_qty") {
-				db.run('DELETE FROM tbl_masters;');
-				db.run('DELETE FROM sqlite_sequence WHERE name="tbl_masters";');
-				var query = "VACUUM;"
-				db.all(query, function (err, results) {
-					if (err) {
-						console.log(err);
-						response.sendStatus(502);
-					}
-					else {
-						csvDataColl.shift();
-						console.log(csvDataColl)
-						let query = "INSERT INTO tbl_masters (barcode, itemcode, description, onhand_qty) VALUES ('" + csvDataColl[0][0] + "','" + csvDataColl[0][1] +
-							"','" + csvDataColl[0][2] + "','" + csvDataColl[0][3] + "')";
-						for (var i = 1; i < csvDataColl.length; i++) {
-							console.log(i)
-							query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "')";
+			if(csvDataColl.length != 0){
+				if (csvDataColl[0][0] == "barcode" && csvDataColl[0][1] == "itemcode" && csvDataColl[0][2] == "description" && csvDataColl[0][3] == "onhand_qty") {
+					db.run('DELETE FROM tbl_masters;');
+					db.run('DELETE FROM sqlite_sequence WHERE name="tbl_masters";');
+					var query = "VACUUM;"
+					db.all(query, function (err, results) {
+						if (err) {
+							console.log(err);
+							response.sendStatus(502);
 						}
-						db.all(query, function (err, results) {
-							if (err) {
-								console.log(err);
-								response.send('Error Import');
+						else {
+							csvDataColl.shift();
+							console.log(csvDataColl)
+							let query = "INSERT INTO tbl_masters (barcode, itemcode, description, onhand_qty) VALUES ('" + csvDataColl[0][0] + "','" + csvDataColl[0][1] +
+								"','" + csvDataColl[0][2] + "','" + csvDataColl[0][3] + "')";
+							for (var i = 1; i < csvDataColl.length; i++) {
+								console.log(i)
+								query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "')";
 							}
-							else {
-								console.log("IMPORT HERE!")
-							}
-						});
-						response.send('Login Successful')
-					}
-				})
+							db.all(query, function (err, results) {
+								if (err) {
+									console.log(err);
+									response.send('Error Import');
+								}
+								else {
+									console.log("IMPORT HERE!")
+								}
+							});
+							response.send('Login Successful')
+						}
+					})
+				}
+				else {
+					response.sendStatus(422) //Wrong file format
+				}
 			}
-			else {
-				response.sendStatus(400)
+			else{
+				response.sendStatus(400) //Wrong Input (file zero byte)
 			}
+			
 			fsExtra.emptyDirSync(dir);
 		});
 

@@ -441,20 +441,6 @@ $("#link_importmenu").click(function () {
 
 $("#link_upload_files").click(function(){
     window.location.href="/uploadfiles"
-    // $.ajax({
-    //     url:"/uploadfiles",
-    //     type:"GET",
-    //     success: function(data){
-    //         console.log(data.html);
-            
-    //         $('#output').html(data.html)
-            
-    //     },
-    //     error:function (data) {
-    //         console.log(data);
-    //         alert('Access Failure')
-    //     }
-    // });
 });
 
 $("#link_logout").on('click',function(e){
@@ -468,6 +454,10 @@ $("#link_summery_report").on("click",function(){
 $('#img_mainmenu').click(function(){
     window.location.href="/mainmenu"
 });
+
+$('#link_new_count').on('click',function(){
+    window.location.href="/newcount"
+})
 
 /* Import to Datatale */
 
@@ -708,11 +698,18 @@ $(document).ready(function(){
               error: function (e) {
                 // $("#start-loader").hide(); 
                 console.log("some error", e);
-                if(e.status == 400){
+                if(e.status == 422){
                     Swal.fire({
                         icon: 'info',
                         title: 'Oops...',
                         text: 'Csv file format is incorrect!',
+                      })
+                }
+                if(e.status == 400){
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Oops...',
+                        text: 'Csv file must not be empty!',
                       })
                 }
                 if(e.status == 502){
