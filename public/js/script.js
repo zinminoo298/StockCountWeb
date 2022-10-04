@@ -789,6 +789,37 @@ $('#btn_generate').click(function(e){
           }
     })  
 });  
+
+$('#btn_new_count_id').on('click',function(){
+    Swal.fire({
+        title: 'Start new count?',
+        text: 'All data will be deleted. Please make sure to save export file.',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+      }).then((result) => {
+        if(result.isConfirmed){
+            const id = $('#stock_take_id').val()
+            $.ajax({
+              url:"/newcount",
+              type:"POST",
+              data:{id : id},
+              success: function(data){
+                  Swal.fire('New count', '', 'success');      
+                  $('#import_ajax_data_array').DataTable().ajax.reload(); 
+              },
+              error:function (data) {
+                  console.log(data);
+                  if(data.status == 500){
+                      Swal.fire('Cannot create new count!','', 'info')
+                  }
+                  else{
+                      Swal.fire('ERROR', '', 'error')
+                  }
+              }
+          });
+        }
+      })
+})
             
    
 

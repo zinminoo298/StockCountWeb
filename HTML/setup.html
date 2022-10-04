@@ -85,7 +85,7 @@
     </style>
 </head>
 
-<body onload="startTime()">
+<body>
     <div class="loaderposition" style="display:none" id="start-loader">
         <div class="lds-dual-ring"></div>
     </div>
@@ -204,8 +204,8 @@
                                           <div class="col">
                                             <div class="form-group">
                                               <label title="ID is auto generated.">Stock Count ID</label>
-                                              <button style="float:right;" class="btn btn-success" id="btn_new_id" type="submit">New Count</button>
-                                              <input disabled class="form-control" type="text">
+                                              <button style="float:right;" class="btn btn-success" id="btn_new_count_id" type="button">New Count</button>
+                                              <input  class="form-control-box" type="text" id="stock_take_id">
                                             </div>
                                           </div>
                                         </div>
@@ -305,7 +305,6 @@
     <script src="//cdn.datatables.net/select/1.4.0/js/dataTables.select.min.js"></script>
     <script src="//cdn.datatables.net/datetime/1.1.2/js/dataTables.dateTime.min.js"></script>
     <!-- <script src="//editor.datatables.net/extensions/Editor/js/dataTables.editor.min.js"></script> -->
-    <script src="Editor-2.0.9/js/dataTables.editor.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>

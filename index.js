@@ -89,7 +89,7 @@ app.post("/request", function (req, res) {
 	res.end();
 });
 
-app.get('/newcount', function(request,response){
+app.get('/newcount', function (request, response) {
 	response.sendFile(__dirname + '/HTML/setup.html');
 })
 
@@ -333,7 +333,7 @@ function uploadCsv(dir, uriFile, request, response) {
 			csvDataColl.push(data);
 		})
 		.on("end", function () {
-			if(csvDataColl.length != 0){
+			if (csvDataColl.length != 0) {
 				if (csvDataColl[0][0] == "barcode" && csvDataColl[0][1] == "itemcode" && csvDataColl[0][2] == "description" && csvDataColl[0][3] == "onhand_qty") {
 					db.run('DELETE FROM tbl_masters;');
 					db.run('DELETE FROM sqlite_sequence WHERE name="tbl_masters";');
@@ -369,10 +369,10 @@ function uploadCsv(dir, uriFile, request, response) {
 					response.sendStatus(422) //Wrong file format
 				}
 			}
-			else{
+			else {
 				response.sendStatus(400) //Wrong Input (file zero byte)
 			}
-			
+
 			fsExtra.emptyDirSync(dir);
 		});
 
@@ -655,7 +655,7 @@ function uploadCsvSummaryReport(directoryPath, file_array, total_files, request,
 	var generatedfileindex = 0
 	console.log(file_array.length)
 	for (i in file_array) {
-		let uriFile = directoryPath+file_array[i]
+		let uriFile = directoryPath + file_array[i]
 		console.log(uriFile)
 		let stream = fs.createReadStream(uriFile);
 		let csvDataColl = [];
@@ -914,6 +914,33 @@ app.get('/downloadfile', function (request, response) {
 	})
 
 });
+
+app.post('/newcount', function (request, response) {
+	let date_ob = new Date();
+	let date = ("0" + date_ob.getDate()).slice(-2);
+	let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+	let year = date_ob.getFullYear();
+	let hours = date_ob.getHours();
+	let minutes = date_ob.getMinutes();
+	let seconds = date_ob.getSeconds();
+	console.log(date + month + year + hours + minutes + seconds);
+	const stockTakeId = date + month + year + hours + minutes + seconds;
+
+	try{
+		db.run("DELETE FROM tbl_masters");
+		db.run("DELETE FROM tbl_transactions");
+		db.run("DELETE FRMO sqlite_sequence");
+		db.run("VACUUM");
+		response.status(200).send(stockTakeId);
+	}
+	catch(error){
+		console.log(error)
+		response.sendStatus(400);
+	}
+	//send response
+})
+
+
 
 
 

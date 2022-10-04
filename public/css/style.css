@@ -7937,7 +7937,7 @@ table.dataTable.display tbody tr.odd>.sorting_1 {
   border-color: #efefef;
   background-color: #fff;
   font-size: 14px;
-  color: #898989;
+  color: #000000;
 }
 
 .theme-form .form-group input[type=text]::-webkit-input-placeholder,
