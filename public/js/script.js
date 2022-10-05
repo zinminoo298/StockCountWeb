@@ -460,7 +460,6 @@ $('#link_new_count').on('click',function(){
 })
 
 /* Import to Datatale */
-
 $('#generate_report_ajax_data_array').on( 'click', 'tbody td:not(:first-child)', function (e) {
     editor.inline( this );
 } );
@@ -806,6 +805,7 @@ $('#btn_new_count_id').on('click',function(){
               success: function(data){
                   Swal.fire('New count', '', 'success');      
                   $('#import_ajax_data_array').DataTable().ajax.reload(); 
+                  $('#stock_take_id').val(data)
               },
               error:function (data) {
                   console.log(data);

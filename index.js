@@ -14,11 +14,10 @@ const download = require('download');
 // const format = require("date-fns")
 const moment = require("moment");
 const { request } = require('https');
+const e = require('express');
 const port = 3000;
 var pool;
-var uploadfilename;
-var currentusername;
-var db;
+// var db;
 
 // pool = db.serialize(function () {
 // 	db.run('CREATE TABLE IF NOT EXISTS tbl_userlogin ('
@@ -183,6 +182,7 @@ app.get('/uploadfiles', function (request, response) {
 });
 
 app.get('/loadimportdata', function (request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	let sqlQuery = "SELECT * FROM tbl_userlogin";
 	db.all(sqlQuery, function (err, data) {
 		if (err) console.log(err);
@@ -287,30 +287,52 @@ app.post('/delete_user', function (request, response) {
 })
 
 app.post('/upload', function (request, response) {
-	var upload = multer({
-		storage: storageimport,
-		limits: { fileSize: '50mb' }
-	}).single('uploadfile');
-	upload(request, response, function (err) {
-		console.log(request.file.filename)
+
+	var directoryPath = __dirname + '/uploads/' + request.session.username + '/master/'
+	fs.readdir(directoryPath, function (err, files) {
+		console.log(files)
 		if (err) {
-			return response.send("Error upload file")
+			return console.log('Unable to scan directory: ' + err);
 		}
-		uploadfilename = request.file.filename
-		response.send("File is uploaded")
-		console.log("File uploaded")
+		else{
+			if(files.length == 0){
+				//do nothing
+			}
+			else{
+				fs.unlinkSync(directoryPath+files[0])
+			}
+			var upload = multer({
+				storage: storageimport,
+				limits: { fileSize: '50mb' }
+			}).single('uploadfile');
+			upload(request, response, function (err) {
+				console.log(request.file.filename)
+				if (err) {
+					return response.send("Error upload file")
+				}
+				response.send("File is uploaded")
+			})
+		}
+		
 	})
 });
 
 app.post('/import', function (request, response) {
-	var chosenfile = __dirname + '/uploads/' + request.session.username + '/master/' + uploadfilename
-	console.log(chosenfile)
-	if (fs.existsSync(chosenfile)) {
-		uploadCsv(__dirname + '/uploads/' + request.session.username + '/master', chosenfile, request, response);
-	}
-	else {
-		response.sendStatus(404)
-	}
+	var directoryPath = __dirname + '/uploads/' + request.session.username + '/master/'
+	fs.readdir(directoryPath, function (err, files) {
+		if (err) {
+			return console.log('Unable to scan directory: ' + err);
+		}
+		console.log(files)
+		var chosenfile = __dirname + '/uploads/' + request.session.username + '/master/' + files[0]
+		console.log(chosenfile)
+		if (fs.existsSync(chosenfile)) {
+			uploadCsv(__dirname + '/uploads/' + request.session.username + '/master', chosenfile, request, response);
+		}
+		else {
+			response.sendStatus(404)
+		}
+	})
 });
 
 app.get('/download', function (request, response) {
@@ -325,6 +347,7 @@ app.get('/download', function (request, response) {
 });
 
 function uploadCsv(dir, uriFile, request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	let stream = fs.createReadStream(uriFile);
 	let csvDataColl = [];
 	let fileStream = csv
@@ -390,13 +413,13 @@ app.post('/upload_api', function (request, response) {
 		if (err) {
 			return response.send("Error upload file")
 		}
-		uploadfilename = request.file.filename
 		response.send("File is uploaded")
 	})
 });
 
 
 app.get('/loadimportdata_test', function (request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	let sqlQuery = "SELECT * FROM tbl_testing";
 	db.all(sqlQuery, function (err, data) {
 		if (err) console.log(err);
@@ -486,6 +509,7 @@ app.get('/loadimportdata_serverside', function (request, response) {
 	var start = request.query.start;
 	var length = request.query.length;
 	var order_data = request.query.order;
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 
 	if (typeof order_data == 'undefined') {
 		var column_name = 'tbl_masters.id';
@@ -615,6 +639,7 @@ const run = asyn => {
 // });
 
 app.post('/generate_report', function (request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	var directoryPath = __dirname + '/uploads/' + request.session.username + '/transaction/'
 	//passsing directoryPath and callback function
 	fs.readdir(directoryPath, function (err, files) {
@@ -651,6 +676,7 @@ app.post('/generate_report', function (request, response) {
 });
 
 function uploadCsvSummaryReport(directoryPath, file_array, total_files, request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	var invalidfilearray = []
 	var generatedfileindex = 0
 	console.log(file_array.length)
@@ -749,6 +775,7 @@ function uploadCsvSummaryReport(directoryPath, file_array, total_files, request,
 // }
 
 app.get('/load_generate_report_serverside', function (request, response) {
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
 	var draw = request.query.draw;
 	var start = request.query.start;
 	var length = request.query.length;
@@ -925,15 +952,17 @@ app.post('/newcount', function (request, response) {
 	let seconds = date_ob.getSeconds();
 	console.log(date + month + year + hours + minutes + seconds);
 	const stockTakeId = date + month + year + hours + minutes + seconds;
-
-	try{
+	var db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
+	try {
+		db.run("DELETE FROM tbl_stocktakeid");
 		db.run("DELETE FROM tbl_masters");
 		db.run("DELETE FROM tbl_transactions");
-		db.run("DELETE FRMO sqlite_sequence");
+		db.run("DELETE FROM sqlite_sequence");
 		db.run("VACUUM");
+		db.run(`INSERT INTO tbl_stocktakeid (id) VALUES('${stockTakeId}')`)
 		response.status(200).send(stockTakeId);
 	}
-	catch(error){
+	catch (error) {
 		console.log(error)
 		response.sendStatus(400);
 	}
