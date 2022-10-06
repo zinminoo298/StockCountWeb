@@ -13,8 +13,9 @@ const filesize = require("filesize")
 const download = require('download');
 // const format = require("date-fns")
 const moment = require("moment");
-const { request } = require('https');
-const e = require('express');
+// const { request } = require('https');
+// const e = require('express');
+// const { file } = require('datatables.net-editor/types/core/api');
 const port = 3000;
 var pool;
 // var db;
@@ -327,7 +328,12 @@ app.post('/import', function (request, response) {
 		var chosenfile = __dirname + '/uploads/' + request.session.username + '/master/' + files[0]
 		console.log(chosenfile)
 		if (fs.existsSync(chosenfile)) {
-			uploadCsv(__dirname + '/uploads/' + request.session.username + '/master', chosenfile, request, response);
+			if(path.extname(chosenfile) == ".csv"){
+				uploadCsv(__dirname + '/uploads/' + request.session.username + '/master', chosenfile, request, response);
+			}
+			else{
+				response.sendStatus(422)
+			}
 		}
 		else {
 			response.sendStatus(404)
@@ -375,16 +381,27 @@ function uploadCsv(dir, uriFile, request, response) {
 								console.log(i)
 								query = query + ",('" + csvDataColl[i][0] + "','" + csvDataColl[i][1] + "','" + csvDataColl[i][2] + "','" + csvDataColl[i][3] + "')";
 							}
-							db.all(query, function (err, results) {
-								if (err) {
-									console.log(err);
-									response.send('Error Import');
-								}
-								else {
-									console.log("IMPORT HERE!")
-								}
-							});
-							response.send('Login Successful')
+							// await db.all(query, function (err, results) {
+							// 	if (err) {
+							// 		console.log(err);
+							// 		response.send('Error Import');
+							// 	}
+							// 	else {
+							// 		// let query = "SELELCT count(*) FROM tbl_masters"
+							// 		// db.all(query,function(err,data){
+							// 		// 	if(err){
+							// 		// 		console.log(err);
+							// 		// 		response.send('Error Import');
+							// 		// 	}
+							// 		// 	else{
+							// 		// 		if()
+							// 		// 	}
+							// 		// })
+							// 		console.log("IMPORT HERE!")
+							// 	}
+							// });
+
+							db_import(query,response);
 						}
 					})
 				}
@@ -400,6 +417,20 @@ function uploadCsv(dir, uriFile, request, response) {
 		});
 
 	stream.pipe(fileStream);
+}
+
+async function db_import(query,response){
+    return new Promise(function(resolve,reject){
+        db.all(query, function(err,rows){
+           if(err){
+			response.send("ERROR")
+			return reject(err);
+			}
+			else{
+				response.send("success")
+			}
+         });
+    });
 }
 
 app.post('/upload_api', function (request, response) {
@@ -505,6 +536,7 @@ app.get('/load_user_serverside', function (request, response) {
 });
 
 app.get('/loadimportdata_serverside', function (request, response) {
+	console.log("load table here")
 	var draw = request.query.draw;
 	var start = request.query.start;
 	var length = request.query.length;
@@ -941,6 +973,20 @@ app.get('/downloadfile', function (request, response) {
 	})
 
 });
+
+app.get('/get_stocktakeid',function(request,response){
+	const db = new sqlite3.Database(`uploads/${request.session.username}/master.db`);
+	const query = "SELECT id FROM tbl_stocktakeid"
+	db.all(query,function(err,data){
+		console.log(data[0])
+		if(data.length != 0){
+			response.send(data[0])
+		}
+		else{
+			response.send("")
+		}
+	})
+})
 
 app.post('/newcount', function (request, response) {
 	let date_ob = new Date();

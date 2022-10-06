@@ -704,6 +704,13 @@ $(document).ready(function(){
                         text: 'Csv file format is incorrect!',
                       })
                 }
+                if(e.status == 422){
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Oops...',
+                        text: 'File format is incorrect!',
+                      })
+                }
                 if(e.status == 400){
                     Swal.fire({
                         icon: 'info',
