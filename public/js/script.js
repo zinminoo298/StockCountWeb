@@ -364,7 +364,7 @@ $("#flip-back").click(function(){
         url:"/login",
         type:"GET",
         data:{
-           username : $("#username_login").val(),
+           email : $("#email_login").val(),
            password : $("#password_login").val()
          },
         success: function(data){
@@ -459,6 +459,10 @@ $('#link_new_count').on('click',function(){
     window.location.href="/newcount"
 })
 
+// $('#link_landing').on('click',function(){
+//     window.location.href="/landing"
+// })
+
 /* Import to Datatale */
 $('#generate_report_ajax_data_array').on( 'click', 'tbody td:not(:first-child)', function (e) {
     editor.inline( this );
@@ -518,6 +522,7 @@ var table = $('#import_ajax_data_array').DataTable({
                     { "data": "id" },
                     { "data": "barcode" },
                     { "data": "itemcode" },
+                    { "data": "location"},
                     { "data": "description" },
                     { "data": "onhand_qty" }
                 ]
@@ -785,6 +790,15 @@ $('#btn_generate').click(function(e){
                 text: 'No files to generate report',
               })
            }
+
+           if(e.status == 402){
+            Swal.fire({
+                icon: 'info',
+                title: 'Oops...',
+                text: 'Stock Stake ID not same',
+              })
+           }
+
            else{
             Swal.fire({
                 icon: 'error',
