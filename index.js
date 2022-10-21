@@ -63,25 +63,25 @@ app.get('/mainmenu', function (request, response) {
 	}
 });
 
-app.get('/newcount', function (request, response) {
-	if (request.session.loggedin && request.session.username != "") {
-		// Output username
-		response.sendFile(__dirname + '/HTML/setup.html');
-	} else {
-		// Not logged in
-		response.sendFile(__dirname + '/HTML/login.html');
-	}
-})
-
 app.get('/importmenu', function (request, response) {
-	if (request.session.loggedin) {
+	if (request.session.loggedin && request.session.username != "") {
 		// Output username
 		response.sendFile(__dirname + '/HTML/import.html');
 	} else {
 		// Not logged in
 		response.sendFile(__dirname + '/HTML/login.html');
 	}
-});
+})
+
+// app.get('/importmenu', function (request, response) {
+// 	if (request.session.loggedin) {
+// 		// Output username
+// 		response.sendFile(__dirname + '/HTML/import.html');
+// 	} else {
+// 		// Not logged in
+// 		response.sendFile(__dirname + '/HTML/login.html');
+// 	}
+// });
 
 app.get('/uploadfiles', function (request, response) {
 	if (request.session.loggedin && request.session.username != "") {
@@ -221,6 +221,11 @@ app.get('/get_stocktakeid',function(request,response){
 			response.send("")
 		}
 	})
+})
+
+app.get('/get_username',function(request,response){
+	console.log("user name"+request.session.username)
+	response.send(request.session.username);
 })
 
 /* Start a new count */

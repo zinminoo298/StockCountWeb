@@ -83,7 +83,7 @@
           <ul class="nav-menus">
             <li class="profile-nav onhover-dropdown p-0 mr-0">
               <div class="media profile-media"><img class="b-r-10" src="/images/dashboard/profile.jpg" alt="">
-                <div class="media-body" id="text_user"><span>User</span> <i class="middle fa fa-angle-down"></i>
+                <div class="media-body"><span id="username"></span> <i class="middle fa fa-angle-down"></i>
                   <p class="mb-0 font-roboto"><span>Admin</span></p>
                 </div>
               </div>
@@ -356,6 +356,21 @@
     });
 
   </script>
+
+<script defer>
+  $.ajax({
+      url: "/get_username",
+      method: "GET",
+      success: function (data) {
+          console.log(data)
+          $('#username').text(data)
+      },
+      error: function (e) {
+          console.log("some error", e);
+      }
+  })
+</script>
+
 </body>
 
 </html>

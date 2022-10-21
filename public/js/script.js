@@ -434,10 +434,9 @@ $("#btn_add_new_user").on('click',function(e){
       })
 })
 
-/* link import master page */
-$("#link_importmenu").click(function () {
-    window.location.href="/importmenu"
-});
+// $("#link_importmenu").click(function () {
+//     window.location.href="/importmenu"
+// });
 
 $("#link_upload_files").click(function(){
     window.location.href="/uploadfiles"
@@ -455,8 +454,8 @@ $('#img_mainmenu').click(function(){
     window.location.href="/mainmenu"
 });
 
-$('#link_new_count').on('click',function(){
-    window.location.href="/newcount"
+$('#link_importmenu').on('click',function(){
+    window.location.href="/importmenu"
 })
 
 // $('#link_landing').on('click',function(){
